@@ -90,3 +90,8 @@
 ./build ./app
 ```
 
+
+## 项目启动
+```sh
+./app.bin service
+```
