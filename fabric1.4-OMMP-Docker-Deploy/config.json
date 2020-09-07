@@ -1,0 +1,17 @@
+{
+    "address": ":7000",
+    "cert": null,
+    "config": "D:/GoPath/src/deploy-server/local.json", 
+    "local": "D:/GoPath/src/deploy-server/local.json",
+    "log": "console",
+    "loglevel": "debug",
+    "mysqlUser":"root",
+    "mysqlPass":"123456",
+    "mysqlIP":"localhost",
+    "mysqlPort":"3306",
+    "mysqlDBName":"fabric",
+    "toolsPort":"8080",
+    "debug": null,
+    "help": null,
+    "key": null
+}
