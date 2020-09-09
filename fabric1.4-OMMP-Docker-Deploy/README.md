@@ -87,7 +87,7 @@
 ### 1. 命令
 
 ```sh
-./build ./app
+./build.ps1 ./app
 ```
 
 
