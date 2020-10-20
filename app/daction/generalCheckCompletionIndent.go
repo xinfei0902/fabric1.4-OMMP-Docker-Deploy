@@ -346,7 +346,7 @@ func checkCompleteDeployIndent(indent *objectdefine.Indent) (*objectdefine.Inden
 		}
 		if len(org.OrgDomain) == 0 {
 			//return nil, errors.New("Empty buff indent.Org.orgDomain configs")
-			org.OrgDomain = fmt.Sprintf("%s.guizhou", strings.ToLower(org.Name))
+			org.OrgDomain = fmt.Sprintf("%s.example.com", strings.ToLower(org.Name))
 		}
 
 		//##############peer##########################
@@ -785,7 +785,7 @@ func checkAddOrgIndent(srcIndent, general *objectdefine.Indent) (map[string]obje
 		}
 		if len(org.OrgDomain) == 0 {
 			//return nil, errors.New("Empty buff indent.Org.orgDomain configs")
-			org.OrgDomain = fmt.Sprintf("%s.guizhou", strings.ToLower(org.Name))
+			org.OrgDomain = fmt.Sprintf("%s.example.com", strings.ToLower(org.Name))
 		}
 		if len(org.Peer) == 0 {
 			return nil, errors.New("Empty buff indent.Org.peer info configs")

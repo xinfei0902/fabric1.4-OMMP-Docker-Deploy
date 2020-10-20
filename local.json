@@ -17,10 +17,10 @@
                 }
             },
             "build": {
-                "truthcc": {
+                "cc": {
                     "type": "chaincode",
                     "version": "1.0",
-                    "bin": "truthcc"
+                    "bin": "cc"
                 }
             },
             "sub": {

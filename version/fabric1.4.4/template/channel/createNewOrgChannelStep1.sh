@@ -14,6 +14,7 @@ echo "========================================="
 cd ${TARGET}
 
 if [ ${START_CA} -eq 1 ];then
+   ## COMPOSE_PROJECT_NAME=baiyun 是docker网络名称 是启动容器加入baiyun网络中
    COMPOSE_PROJECT_NAME=baiyun docker-compose -f  base.yaml up -d ${NEW_ORG_CA_NAME}
    ret=$?
 	if [ $ret -ne 0 ];then

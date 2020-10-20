@@ -25,7 +25,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: crypto-config/ordererOrganizations/prisons.guizhou/msp
+        MSPDir: crypto-config/ordererOrganizations/example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -49,7 +49,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: BaiyunMSP
 
-        MSPDir: crypto-config/peerOrganizations/baiyun.guizhou/msp
+        MSPDir: crypto-config/peerOrganizations/baiyun.example.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -71,7 +71,7 @@ Organizations:
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
             # 与base.yaml中对应peer节点容器7051端口所映射的主机接口一致
-            - Host: peer0.baiyun.guizhou
+            - Host: peer0.baiyun.example.com
               Port: 7051
 
 
@@ -192,11 +192,11 @@ Orderer: &OrdererDefaults
     Addresses:
         # port部分与base.yaml中对应orderer节点容器的7050端口所映射的主机端口一致
         # 填写域名，则orderer中extra_host信息
-        - orderer0.prisons.guizhou:7050
-        - orderer1.prisons.guizhou:7050
-        - orderer2.prisons.guizhou:7050
-        - orderer3.prisons.guizhou:7050
-        - orderer4.prisons.guizhou:7050
+        - orderer0.example.com:7050
+        - orderer1.example.com:7050
+        - orderer2.example.com:7050
+        - orderer3.example.com:7050
+        - orderer4.example.com:7050
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -299,7 +299,7 @@ Channel: &ChannelDefaults
 ################################################################################
 Profiles:
     #创世纪块配置
-    GuizhouPrisonNetworkGenesis:
+    TwoOrgsOrdererGenesis:
         <<: *ChannelDefaults
         Capabilities:
             <<: *ChannelCapabilities
@@ -314,11 +314,11 @@ Profiles:
             Organizations:
             - <<: *OrdererOrg        
         Consortiums:
-            GuizhouPrisonConsortium:
+            SampleConsortium:
                 Organizations:
                     - *Baiyun
     TwoOrgsChannel:
-        Consortium: GuizhouPrisonConsortium
+        Consortium: SampleConsortium
         <<: *ChannelDefaults
         Application:
             <<: *ApplicationDefaults

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CHANNEL_NAME=$[channelName]
-## orderer名称加端口 例如：orderer0.prisons.guizhou:7050
+## orderer名称加端口 例如：orderer0.example.com:7050
 ORDERER_NAME=$[ordererAddress]
 ORDERER_CA=$[ordererTlsCa]
 ##节点配置
@@ -9,7 +9,7 @@ ORG_NAMEMSP=$[orgMSPID]
 PEER_TLS_PATH=$[peerTlsCa]
 PEER_MSP_PATH=$[peerUsersMsp]
 PEER_ADDRESS=$[peerAddress]
-##示例（"192.168.8.1 peer0.baiyun.guizhou" "192.168.8.2 peer2.baiyun.guizhou"）
+##示例（"192.168.8.1 peer0.baiyun.example.com" "192.168.8.2 peer2.baiyun.example.com"）
 PEER_HOST=$[peerHosts]
 verifyResult() {
   if [ $1 -ne 0 ]; then

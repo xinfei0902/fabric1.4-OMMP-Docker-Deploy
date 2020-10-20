@@ -15,6 +15,7 @@ echo "========================================="
 echo "启动新组织节点"
 echo "========================================="
 cd ${TARGET}
+## COMPOSE_PROJECT_NAME=baiyun 是docker网络名称 是启动容器加入baiyun网络中
 COMPOSE_PROJECT_NAME=baiyun docker-compose -f base.yaml up -d $PEER_NAME
 sleep 3
 

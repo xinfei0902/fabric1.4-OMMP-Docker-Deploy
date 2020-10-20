@@ -11,7 +11,7 @@ import (
 )
 
 func Test_arrat(t *testing.T) {
-	sPath := "D:/GoPath/src/deploy-server/output/sourceid/crypto-config/peerOrganizations/baiyun.guizhou/tlsca/"
+	sPath := "D:/GoPath/src/deploy-server/output/sourceid/crypto-config/peerOrganizations/baiyun.example.com/tlsca/"
 	var st string
 	filepath.Walk(sPath, func(path string, info os.FileInfo, err error) error {
 		fmt.Println(path)        //打印path信息

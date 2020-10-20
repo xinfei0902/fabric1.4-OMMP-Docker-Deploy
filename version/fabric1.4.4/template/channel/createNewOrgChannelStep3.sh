@@ -4,7 +4,7 @@ TARGET=$[target]
 CHANNEL_NAME=$[channelName]
 CHANNEL_CONFIG=./channel-artifacts/${CHANNEL_NAME}.tx
 NEW_ORG_CLI_NAME=$[newOrgCliName]
-## orderer名称加端口 例如：orderer0.prisons.guizhou:7050
+## orderer名称加端口 例如：orderer0.example.com:7050
 ORDERER_NAME=$[ordererAddress]
 ORDERER_CA=$[ordererTlsCa]
 ##节点配置
