@@ -1,7 +1,7 @@
 #!/bin/bash
 
 CHANNEL_NAME=$[channelName]
-## orderer名称加端口 例如：orderer0.prisons.guizhou:7050
+## orderer名称加端口 例如：orderer0.example.com:7050
 ORDERER_NAME=$[ordererAddress]
 ORDERER_CA=$[ordererTlsCa]
 ##合约配置

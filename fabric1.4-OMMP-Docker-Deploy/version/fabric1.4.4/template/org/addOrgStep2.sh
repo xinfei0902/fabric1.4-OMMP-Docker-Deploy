@@ -5,7 +5,7 @@ TARGET=$[target]
 ORG_NAMEMSP=$[orgMSPID]
 ##通道名称
 CHANNEL_NAME=$[channelName]
-## orderer名称加端口 例如：orderer0.prisons.guizhou:7050
+## orderer名称加端口 例如：orderer0.example.com:7050
 ORDERER_NAME=$[ordererAddress]
 ORDERER_TLS_PATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/$[ordererTlsCa]
 ORDERER_MSP_PATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/ordererOrganizations/$[ordererUsersMsp]

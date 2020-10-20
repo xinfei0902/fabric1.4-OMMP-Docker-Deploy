@@ -283,13 +283,13 @@ func genesisBlockProfiles(general *objectdefine.Indent, template *localconfig.To
 		genesosOrganizations[i] = self.Organizations[i+1]
 	}
 	genesis.Consortiums = map[string]*localconfig.Consortium{
-		"GuizhouPrisonConsortium": &localconfig.Consortium{
+		"SampleConsortium": &localconfig.Consortium{
 			Organizations: genesosOrganizations,
 		},
 	}
-	ret["GuizhouPrisonNetworkGenesis"] = genesis
+	ret["TwoOrgsOrdererGenesis"] = genesis
 	channel := &localconfig.Profile{}
-	channel.Consortium = "GuizhouPrisonConsortium"
+	channel.Consortium = "SampleConsortium"
 	// channel.Capabilities = self.Channel.Capabilities
 	// //one.Policies = self.Channel.Policies
 	// channel.Orderer = self.Orderer
@@ -488,7 +488,7 @@ func v1MakeGenerateExec(env []string, general *objectdefine.Indent, output, read
 	//block file 用来创建创世区块的
 	// ret = append(ret, objectdefine.ProcessPair{
 	// 	Exec:        configtxgen,
-	// 	Args:        []string{`-profile`, `GuizhouPrisonNetworkGenesis`, `-channelID`, `byfn-sys-channel`, `-outputBlock`, outputBlocks},
+	// 	Args:        []string{`-profile`, `TwoOrgsOrdererGenesis`, `-channelID`, `byfn-sys-channel`, `-outputBlock`, outputBlocks},
 	// 	Dir:         general.BaseOutput,
 	// 	Environment: env,
 	// })

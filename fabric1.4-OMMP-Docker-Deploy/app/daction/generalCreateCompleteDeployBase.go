@@ -196,7 +196,7 @@ func GeneralCreateCompleteDeployBase(general *objectdefine.Indent, output *objec
 		enviroment = append(enviroment, fmt.Sprintf("FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/%s", cifeTLSSKPath))
 		enviroment = append(enviroment, "FABRIC_CA_SERVER_TLS_ENABLED=true")
 		caInfo.Environment = enviroment
-		caInfo.Command = "sh -c 'fabric-ca-server start -b admin:equipment-admin -d'"
+		caInfo.Command = "sh -c 'fabric-ca-server start -b admin:heitu-admin -d'"
 		volumes := make([]string, 0)
 		volumes = append(volumes, fmt.Sprintf("./crypto-config/peerOrganizations/%s/ca:/etc/hyperledger/fabric-ca-server-config/ca", org.OrgDomain))
 		volumes = append(volumes, fmt.Sprintf("./crypto-config/peerOrganizations/%s/tlsca:/etc/hyperledger/fabric-ca-server-config/tlscas", org.OrgDomain))

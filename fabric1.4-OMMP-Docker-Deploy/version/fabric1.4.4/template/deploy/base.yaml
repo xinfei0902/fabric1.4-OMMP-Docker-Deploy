@@ -77,21 +77,21 @@ services:
     environment:
       - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
       - FABRIC_CA_SERVER_CA_NAME=ca0-baiyun
-      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca/ca.baiyun.guizhou-cert.pem
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca/ca.baiyun.example.com-cert.pem
       - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/ca/64db1c82c0a710cef18d6e8a0db78110ae8399445b9ac928eda4d7d8fcce2e0e_sk
       - FABRIC_CA_SERVER_TLS_ENABLED=true
-      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.baiyun.guizhou-cert.pem
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.baiyun.example.com-cert.pem
       - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/c360e52c1ff3e8e98bb333759b766c0e6204f04eebac7a2cdc80952cf9227d35_sk
     ports:
       - "7054:7054"
     command: sh -c 'fabric-ca-server start -b admin:baiyun-admin -d'
     volumes:
-      - ./crypto-config/peerOrganizations/baiyun.guizhou/ca:/etc/hyperledger/fabric-ca-server-config/ca
-      - ./crypto-config/peerOrganizations/baiyun.guizhou/tlsca:/etc/hyperledger/fabric-ca-server-config/tlsca
+      - ./crypto-config/peerOrganizations/baiyun.example.com/ca:/etc/hyperledger/fabric-ca-server-config/ca
+      - ./crypto-config/peerOrganizations/baiyun.example.com/tlsca:/etc/hyperledger/fabric-ca-server-config/tlsca
       - /blockchainData/ca0:/etc/hyperledger/fabric-ca-server
 
   orderer0:
-    container_name: orderer0.prisons.guizhou
+    container_name: orderer0.example.com
     image: hyperledger/fabric-orderer:latest
     environment:
       - GODEBUG=netdns=go
@@ -117,8 +117,8 @@ services:
     command: orderer
     volumes:
       - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ./crypto-config/ordererOrganizations/prisons.guizhou/orderers/orderer0.prisons.guizhou/msp:/var/hyperledger/orderer/msp
-      - ./crypto-config/ordererOrganizations/prisons.guizhou/orderers/orderer0.prisons.guizhou/tls:/var/hyperledger/orderer/tls
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/tls:/var/hyperledger/orderer/tls
       - /blockchainData/orderer0:/var/hyperledger/production/orderer
     ports:
       - 7050:7050
@@ -139,25 +139,25 @@ services:
     volumes:
       - /blockchainData/couchdb-peer0.baiyun:/opt/couchdb/data
   peer0:
-    container_name: peer0.baiyun.guizhou
+    container_name: peer0.baiyun.example.com
     image: hyperledger/fabric-peer:latest
     environment:
-      - CORE_PEER_ID=peer0.baiyun.guizhou
+      - CORE_PEER_ID=peer0.baiyun.example.com
         #用于peer自身时，是组织中其他peer节点联系的端口，用于cli时，这个是cli要去连接的peer的地址，因此要使用容器端口映射的主机端口
-      - CORE_PEER_ADDRESS=peer0.baiyun.guizhou:7051
+      - CORE_PEER_ADDRESS=peer0.baiyun.example.com:7051
         #自己监听的地址，要容器自身的端口
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
         #如果不设置这个变量，将默认使用CORE_PEER_ADDRESS的值+7052端口
         #CORE_PEER_CHAINCODEADDRESS和CORE_PEER_CHAINCODELISTENADDRESS使用的端口必须一致
-      - CORE_PEER_CHAINCODEADDRESS=peer0.baiyun.guizhou:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.baiyun.example.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
         #bootstrap用于peer启动时，向组织内部除自己外的谁介绍自己，同时向该节点索要其已经拥有的组织成员关系
         #该值是一个列表，值用空格隔开
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.baiyun.guizhou:7151
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.baiyun.example.com:7151
         #向其他组织介绍自己（在大型网络中如此设置更有效率和有用）
         #如果不设置，则该节点将不被其他组织中的节点知道
         #自己负责介绍自己
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.baiyun.guizhou:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.baiyun.example.com:7051
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
       - CORE_PEER_LOCALMSPID=BaiyunMSP
@@ -184,8 +184,8 @@ services:
     command: peer node start
     volumes:
       - /var/run/:/host/var/run/
-      - ./crypto-config/peerOrganizations/baiyun.guizhou/peers/peer0.baiyun.guizhou/msp:/etc/hyperledger/fabric/msp
-      - ./crypto-config/peerOrganizations/baiyun.guizhou/peers/peer0.baiyun.guizhou/tls:/etc/hyperledger/fabric/tls
+      - ./crypto-config/peerOrganizations/baiyun.example.com/peers/peer0.baiyun.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/baiyun.example.com/peers/peer0.baiyun.example.com/tls:/etc/hyperledger/fabric/tls
       - /blockchainData/peer0.baiyun:/var/hyperledger/production
     ports:
       - 7051:7051
@@ -194,15 +194,15 @@ services:
     extra_hosts:
         #peer和couchdb交流时需要用到
       - "couchdb-peer0.baiyun:192.168.8.13"
-      - "orderer0.prisons.guizhou:192.168.8.13"
-      - "orderer1.prisons.guizhou:192.168.8.14"
+      - "orderer0.example.com:192.168.8.13"
+      - "orderer1.example.com:192.168.8.14"
         #gossip交流的时候，会用到。如果不写全，至少把通道中的锚节点写上
-      - "peer0.baiyun.guizhou:192.168.8.13"
-      - "peer1.baiyun.guizhou:192.168.8.14"
-      - "peer2.baiyun.guizhou:192.168.8.15"
-      - "peer0.equipment.virtual.com:192.168.8.13"
-      - "peer1.equipment.virtual.com:192.168.8.14"
-      - "peer2.equipment.virtual.com:192.168.8.15"
+      - "peer0.baiyun.example.com:192.168.8.13"
+      - "peer1.baiyun.example.com:192.168.8.14"
+      - "peer2.baiyun.example.com:192.168.8.15"
+      - "peer0.heitu.example.com:192.168.8.13"
+      - "peer1.heitu.example.com:192.168.8.14"
+      - "peer2.heitu.example.com:192.168.8.15"
       
   cli:
     container_name: cli
@@ -216,13 +216,13 @@ services:
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=cli
-      - CORE_PEER_ADDRESS=peer0.baiyun.guizhou:7051
+      - CORE_PEER_ADDRESS=peer0.baiyun.example.com:7051
       - CORE_PEER_LOCALMSPID=BaiyunMSP
       - CORE_PEER_TLS_ENABLED=true
-      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.guizhou/peers/peer0.baiyun.guizhou/tls/server.crt
-      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.guizhou/peers/peer0.baiyun.guizhou/tls/server.key
-      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.guizhou/peers/peer0.baiyun.guizhou/tls/ca.crt
-      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.guizhou/users/Admin@baiyun.guizhou/msp
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.example.com/peers/peer0.baiyun.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.example.com/peers/peer0.baiyun.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.example.com/peers/peer0.baiyun.example.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/baiyun.example.com/users/Admin@baiyun.example.com/msp
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: /bin/bash
     volumes:
@@ -233,11 +233,11 @@ services:
       - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
       - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
     extra_hosts:
-      - "orderer0.prisons.guizhou:192.168.8.13"
-      - "orderer1.prisons.guizhou:192.168.8.14"
-      - "peer0.baiyun.guizhou:192.168.8.13"
-      - "peer1.baiyun.guizhou:192.168.8.14"
-      - "peer2.baiyun.guizhou:192.168.8.15"
-      - "peer0.equipment.virtual.com:192.168.8.13"
-      - "peer1.equipment.virtual.com:192.168.8.14"
-      - "peer2.equipment.virtual.com:192.168.8.15"
+      - "orderer0.example.com:192.168.8.13"
+      - "orderer1.example.com:192.168.8.14"
+      - "peer0.baiyun.example.com:192.168.8.13"
+      - "peer1.baiyun.example.com:192.168.8.14"
+      - "peer2.baiyun.example.com:192.168.8.15"
+      - "peer0.heitu.example.com:192.168.8.13"
+      - "peer1.heitu.example.com:192.168.8.14"
+      - "peer2.heitu.example.com:192.168.8.15"

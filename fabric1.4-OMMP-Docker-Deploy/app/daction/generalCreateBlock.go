@@ -254,11 +254,11 @@ func genesisCompleteBlockProfiles(general *objectdefine.Indent, template *localc
 		genesisOrganizations[i] = self.Organizations[i+1]
 	}
 	genesis.Consortiums = map[string]*localconfig.Consortium{
-		"GuizhouPrisonConsortium": &localconfig.Consortium{
+		"SampleConsortium": &localconfig.Consortium{
 			Organizations: genesisOrganizations,
 		},
 	}
-	ret["GuizhouPrisonNetworkGenesis"] = genesis
+	ret["TwoOrgsOrdererGenesis"] = genesis
 	//每一个通道的配置
 	for channelName, deploy := range general.Deploy {
 		channelConfig := genesisCompleteBlockChannelConfig(deploy, self)
@@ -280,7 +280,7 @@ func genesisCompleteBlockChannelConfig(deploy objectdefine.DeployType, self *loc
 		}
 	}
 	channel := &localconfig.Profile{}
-	channel.Consortium = "GuizhouPrisonConsortium"
+	channel.Consortium = "SampleConsortium"
 	channel.Application = &localconfig.Application{}
 	channel.Application.Organizations = cgenesosOrganizations
 	channel.Application.Capabilities = self.Capabilities["Application"]
@@ -442,7 +442,7 @@ func MakeGenerateExecCommand(env []string, general *objectdefine.Indent, output,
 	//block file 用来创建创世区块的
 	ret = append(ret, objectdefine.ProcessPair{
 		Exec:        configtxgen,
-		Args:        []string{`-profile`, `GuizhouPrisonNetworkGenesis`, `-channelID`, `byfn-sys-channel`, `-outputBlock`, outputBlocks},
+		Args:        []string{`-profile`, `TwoOrgsOrdererGenesis`, `-channelID`, `byfn-sys-channel`, `-outputBlock`, outputBlocks},
 		Dir:         general.BaseOutput,
 		Environment: env,
 	})
