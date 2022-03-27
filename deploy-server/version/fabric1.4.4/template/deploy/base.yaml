@@ -1,0 +1,243 @@
+version: '2'
+
+
+#分布式部署顺序，ca可单独部署，couchdb随peer启动，不需要单独启动
+# zookeeper->kafka->orderer->peer
+# ca
+services:
+  zookeeper0:
+    container_name: zookeeper0
+    image: hyperledger/fabric-zookeeper:latest
+    environment:
+      - ZOO_MY_ID=1
+        #这里的server.N中的N，要与zookeeper的ID对应起来，quorumListenOnAllIPs=true只是利用ZOO_SERVERS这个变量将这个配置导入zk的配置中
+        #集群节点端口的设置：自身使用的是容器内部端口，访问其他容器使用的是容器映射的主机端口
+      #- ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888 server.4=zookeeper3:2888:3888 server.5=zookeeper4:2888:3888 quorumListenOnAllIPs=true
+      - ZOO_SERVERS=server.1=zookeeper0:2888:3888 server.2=zookeeper1:2888:3888 server.3=zookeeper2:2888:3888 quorumListenOnAllIPs=true
+        #监听客户端口，使用容器内部端口，默认2181。kafka中设置的是容器内部监听的端口映射的主机端口
+      - ZOOKEEPER_CLIENT_PORT=2181
+        #向zk发送心跳的时长，默认2s
+      - ZOOKEEPER_TICK_TIME=5000
+    volumes:
+      - /blockchainData/zookeeper0/data:/data
+      - /blockchainData/zookeeper0/datalog:/datalog
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+    extra_hosts:
+      - "zookeeper0:192.168.8.13"
+      - "zookeeper1:192.168.8.14"
+      - "zookeeper2:192.168.8.15"
+      - "kafka0:192.168.8.13"
+      - "kafka1:192.168.8.14"
+      - "kafka2:192.168.8.15"
+      - "kafka3:192.168.8.16"
+
+  kafka0:
+    container_name: kafka0
+    image: hyperledger/fabric-kafka:latest
+    environment:
+      - KAFKA_BROKER_ID=1
+      #zk容器监听的客户端端口映射的主机端口
+      #- KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181,zookeeper3:2181,zookeeper4:2181
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper0:2181,zookeeper1:2181,zookeeper2:2181
+        #kafka把自身监听的地址发送给zk，然后由zk告诉其他kafka。所以这里要设置kafka
+        #容器内部监听的端口所映射的主机端口，同时其他kafka容器里面要有域名映射的IP
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka0:9092
+      - KAFKA_MESSAGE_MAX_BYTES=1048576
+      - KAFKA_REPLICA_FETCH_MAX_BYTES=1048576
+      - KAFKA_UNCLEAN_LEADER_ELECTION_ENABLE=false
+      - KAFKA_LOG_RETENTION_MS=-1
+      #测试环境有4个kafka节点，下面三个环境变量的值要依次改为2,3,3
+      #预发环境有7个kafka节点，下面三个环境变量的值要依次改为3,3,5
+      #最小同步副本数，该值规定了一个消息只有同时保存成功的副本数达到该值，才能返回成功。
+      - KAFKA_MIN_INSYNC_REPLICAS=2
+      #主题偏移副本数，与创建主题时有关，值越高，kafka集群可用性越强，效率越低。值要小于创建主题时存在的有效的broker数量，值不限奇偶性
+      - KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=3
+      #默认副本数，值越高，kafka集群可用性越强，效率越低。
+      - KAFKA_DEFAULT_REPLICATION_FACTOR=3
+      - KAFKA_LOG.DIRS=/opt/kafka/kafka-logs
+    volumes:
+      - /blockchainData/kafka0/kafka-logs:/opt/kafka/kafka-logs
+    ports:
+      - "9092:9092"
+    extra_hosts:
+      - "zookeeper0:192.168.8.13"
+      - "zookeeper1:192.168.8.14"
+      - "zookeeper2:192.168.8.15"
+      - "kafka0:192.168.8.13"
+      - "kafka1:192.168.8.14"
+      - "kafka2:192.168.8.15"
+      - "kafka3:192.168.8.16"
+
+  ca0:
+    container_name: ca0-org1
+    image: hyperledger/fabric-ca:latest
+    environment:
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_CA_NAME=ca0-org1
+      - FABRIC_CA_SERVER_CA_CERTFILE=/etc/hyperledger/fabric-ca-server-config/ca/ca.org1.example.com-cert.pem
+      - FABRIC_CA_SERVER_CA_KEYFILE=/etc/hyperledger/fabric-ca-server-config/ca/64db1c82c0a710cef18d6e8a0db78110ae8399445b9ac928eda4d7d8fcce2e0e_sk
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_TLS_CERTFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/tlsca.org1.example.com-cert.pem
+      - FABRIC_CA_SERVER_TLS_KEYFILE=/etc/hyperledger/fabric-ca-server-config/tlsca/c360e52c1ff3e8e98bb333759b766c0e6204f04eebac7a2cdc80952cf9227d35_sk
+    ports:
+      - "7054:7054"
+    command: sh -c 'fabric-ca-server start -b admin:anhui-admin -d'
+    volumes:
+      - ./crypto-config/peerOrganizations/org1.example.com/ca:/etc/hyperledger/fabric-ca-server-config/ca
+      - ./crypto-config/peerOrganizations/org1.example.com/tlsca:/etc/hyperledger/fabric-ca-server-config/tlsca
+      - /blockchainData/ca0:/etc/hyperledger/fabric-ca-server
+
+  orderer0:
+    container_name: orderer0.example.com
+    image: hyperledger/fabric-orderer:latest
+    environment:
+      - GODEBUG=netdns=go
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      #与kafka设定的KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR保持一致
+      - ORDERER_KAFKA_TOPIC_REPLICATIONFACTOR=3
+      #测试节点只写4个节点，否则orderer随机选择可能会去连接并不存在的kafka节点
+      #- ORDERER_KAFKA_BROKERS=[kafka0:9092,kafka1:9092,kafka2:9092,kafka3:9092,kafka4:9092,kafka5:9092,kafka6:9092]
+      - ORDERER_KAFKA_BROKERS=[kafka0:9092,kafka1:9092,kafka2:9092,kafka3:9092]
+      - ORDERER_GENERAL_CLUSTER_CLIENTCERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_CLUSTER_CLIENTPRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_CLUSTER_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric
+    command: orderer
+    volumes:
+      - ./channel-artifacts/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/msp:/var/hyperledger/orderer/msp
+      - ./crypto-config/ordererOrganizations/example.com/orderers/orderer0.example.com/tls:/var/hyperledger/orderer/tls
+      - /blockchainData/orderer0:/var/hyperledger/production/orderer
+    ports:
+      - 7050:7050
+    extra_hosts:
+      - "kafka0:192.168.8.13"
+      - "kafka1:192.168.8.14"
+      - "kafka2:192.168.8.15"
+      - "kafka3:192.168.8.16"
+
+  couchdb0:
+    container_name: couchdb-peer0.org1
+    image: hyperledger/fabric-couchdb:latest
+    environment:
+      - COUCHDB_USER=
+      - COUCHDB_PASSWORD=
+    ports:
+      - "5084:5984"
+    volumes:
+      - /blockchainData/couchdb-peer0.org1:/opt/couchdb/data
+  peer0:
+    container_name: peer0.org1.example.com
+    image: hyperledger/fabric-peer:latest
+    environment:
+      - CORE_PEER_ID=peer0.org1.example.com
+        #用于peer自身时，是组织中其他peer节点联系的端口，用于cli时，这个是cli要去连接的peer的地址，因此要使用容器端口映射的主机端口
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+        #自己监听的地址，要容器自身的端口
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+        #如果不设置这个变量，将默认使用CORE_PEER_ADDRESS的值+7052端口
+        #CORE_PEER_CHAINCODEADDRESS和CORE_PEER_CHAINCODELISTENADDRESS使用的端口必须一致
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+        #bootstrap用于peer启动时，向组织内部除自己外的谁介绍自己，同时向该节点索要其已经拥有的组织成员关系
+        #该值是一个列表，值用空格隔开
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1.org1.example.com:7151
+        #向其他组织介绍自己（在大型网络中如此设置更有效率和有用）
+        #如果不设置，则该节点将不被其他组织中的节点知道
+        #自己负责介绍自己
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_PROFILE_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+        #使用couchdb映射的主机端口，所使用的地址如果是域名，在下面的extra_hosts要进行映射
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb-peer0.org1:5084
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=
+      - GODEBUG=netdns=go
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+        #根据docker-compose启动时设置的COMPOSE_PROJECT_NAME变量值改变而改变，$(COMPOSE_PROJECT_NAME)_default
+        #如果不设置，则是base.yaml所在目录名+_defalut
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=anhui_default
+        #节点的设置为INFO，cli端设置为DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
+      - CORE_CHAINCODE_LOGGING_LEVEL=DEBUG
+      - CORE_CHAINCODE_LOGGING_SHIM=DEBUG
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: peer node start
+    volumes:
+      - /var/run/:/host/var/run/
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
+      - ./crypto-config/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
+      - /blockchainData/peer0.org1:/var/hyperledger/production
+    ports:
+      - 7051:7051
+    depends_on:
+      - couchdb0
+    extra_hosts:
+        #peer和couchdb交流时需要用到
+      - "couchdb-peer0.org1:192.168.8.13"
+      - "orderer0.example.com:192.168.8.13"
+      - "orderer1.example.com:192.168.8.14"
+        #gossip交流的时候，会用到。如果不写全，至少把通道中的锚节点写上
+      - "peer0.org1.example.com:192.168.8.13"
+      - "peer1.org1.example.com:192.168.8.14"
+      - "peer2.org1.example.com:192.168.8.15"
+      - "peer0.org2.example.com:192.168.8.13"
+      - "peer1.org2.example.com:192.168.8.14"
+      - "peer2.org2.example.com:192.168.8.15"
+      
+  cli:
+    container_name: cli
+    image: hyperledger/fabric-tools:latest
+    tty: true
+    stdin_open: true
+    environment:
+        #与创建genesis.block时所给的-channelID的值一致
+      - SYS_CHANNEL=system_channel
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_ID=cli
+      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_LOCALMSPID=Org1MSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+      - CORE_PEER_MSPCONFIGPATH=/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
+    command: /bin/bash
+    volumes:
+      - /var/run/:/host/var/run/
+        #在cli容器的GOPATH目录下
+      - ./chaincode/:/opt/gopath/src/github.com/chaincode
+      - ./crypto-config:/opt/gopath/src/github.com/hyperledger/fabric/peer/crypto/
+      - ./scripts:/opt/gopath/src/github.com/hyperledger/fabric/peer/scripts/
+      - ./channel-artifacts:/opt/gopath/src/github.com/hyperledger/fabric/peer/channel-artifacts
+    extra_hosts:
+      - "orderer0.example.com:192.168.8.13"
+      - "orderer1.example.com:192.168.8.14"
+      - "peer0.org1.example.com:192.168.8.13"
+      - "peer1.org1.example.com:192.168.8.14"
+      - "peer2.org1.example.com:192.168.8.15"
+      - "peer0.org2.example.com:192.168.8.13"
+      - "peer1.org2.example.com:192.168.8.14"
+      - "peer2.org2.example.com:192.168.8.15"

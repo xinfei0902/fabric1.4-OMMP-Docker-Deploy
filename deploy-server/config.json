@@ -1,0 +1,19 @@
+{
+    "address": ":7000",
+    "cert": null,
+    "config": "/root/blockChain/deploy-server/local.json", 
+    "local": "/root/blockChain/deploy-server/local.json",
+    "log": "console",
+    "loglevel": "debug",
+    "mysqlUser":"root",
+    "mysqlPass":"123456",
+    "mysqlIP":"localhost",
+    "mysqlPort":"3306",
+    "mysqlDBName":"fabric",
+    "toolsPort":"8080",
+    "toolsDeployPath":"/BlockchainData/deploy-tools",
+    "blockBrowserIP":"192.168.1.1",
+    "debug": null,
+    "help": null,
+    "key": null
+}
